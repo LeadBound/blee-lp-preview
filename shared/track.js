@@ -6,7 +6,8 @@
  * ENDPOINT stays null until the n8n webhook exists; until then events only go to the console.
  */
 (function () {
-  var ENDPOINT = null; // n8n webhook, wired at the tracking stage
+  var ENDPOINT = 'https://bennivbee.app.n8n.cloud/webhook/blee-landing'; // n8n: LB - Landing Page <> Blee
+  var LIVE = { callback_left: 1 }; // only the form leaves the page for now; per-lead tracking comes with lp_link
   var q = new URLSearchParams(location.search);
   var token = (q.get('t') || '').replace(/[^A-Za-z0-9_-]/g, '').slice(0, 24) || null;
   var page = document.documentElement.getAttribute('data-page') || 'unknown';
@@ -17,7 +18,7 @@
     sent[name] = true;
     var body = { event: name, t: token, page: page, at: new Date().toISOString(), extra: extra || null };
     if (!human && name !== 'visit') { queue.push(body); return; }
-    if (!ENDPOINT) { console.info('[blee-track]', body); return; }
+    if (!ENDPOINT || !LIVE[name]) { console.info('[blee-track]', body); return; }
     try { navigator.sendBeacon(ENDPOINT, new URLSearchParams({ d: JSON.stringify(body) })); } catch (e) { /* never breaks the page */ }
   }
   function becameHuman() {
